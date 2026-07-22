@@ -8,3 +8,4 @@ CREATE TABLE online_retail (
     customer_id VARCHAR(10),
     country VARCHAR(50)
 );
+
