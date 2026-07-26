@@ -1,5 +1,11 @@
+-- ===================================
+-- Online Retail Analysis
+-- Data Cleaning
+-- ===================================
+
 DROP TABLE IF EXISTS online_retail_features;
 
+CREATE TABLE online_retail_features AS
 SELECT
     *,
     quantity * unit_price AS revenue,
