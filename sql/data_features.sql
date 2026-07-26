@@ -1,6 +1,6 @@
 -- ===================================
 -- Online Retail Analysis
--- Data Cleaning
+-- Data Features
 -- ===================================
 
 DROP TABLE IF EXISTS online_retail_features;
