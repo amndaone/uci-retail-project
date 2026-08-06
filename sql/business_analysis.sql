@@ -62,37 +62,47 @@ FROM online_retail_features
 GROUP BY invoice_year, invoice_month, month_name
 ORDER BY invoice_year, invoice_month;
 
--- Rank months based on monthly revenue
+-- Rank top-selling months based on monthly revenue
 -- Finding: November 2011 generated most revenue, February 2011 least revenue
-SELECT invoice_year, invoice_month, month_name, SUM(revenue) AS monthly_revenue
+SELECT invoice_year, invoice_month, month_name, SUM(revenue),
+RANK() OVER (ORDER BY SUM(revenue) DESC)
 FROM online_retail_features
-GROUP BY invoice_year, invoice_month, month_name
-ORDER BY monthly_revenue DESC;
+GROUP BY invoice_year, invoice_month, month_name;
 
 -- Rank months based on order volume
 -- Finding: November 2011 highest no. of orders
 -- December 2011 least (note: dataset last day is Dec. 9 2011)
-SELECT invoice_year, invoice_month, month_name, COUNT(DISTINCT invoice_no) AS total_monthly_orders
+SELECT
+    invoice_year,
+    invoice_month,
+    month_name,
+    COUNT(DISTINCT invoice_no) AS total_monthly_orders,
+    RANK() OVER (ORDER BY COUNT(DISTINCT invoice_no) DESC) AS order_volume_rank
 FROM online_retail_features
-GROUP BY invoice_year, invoice_month, month_name
-ORDER BY total_monthly_orders DESC;
+GROUP BY invoice_year, invoice_month, month_name;
 
 -- ===================================
 -- Product Analysis
 -- ===================================
 
--- Identify which products sell the most units
-SELECT stock_code, description, SUM(quantity) AS units_sold
+-- Rank top 10 products by most units sold
+SELECT
+    stock_code,
+    description,
+    SUM(quantity) AS total_units_sold,
+    RANK() OVER (ORDER BY SUM(quantity) DESC) AS product_rank
 FROM online_retail_features
 GROUP BY stock_code, description
-ORDER BY units_sold DESC
 LIMIT 10;
 
--- Identify which products have the highest revenue
-SELECT stock_code, description, SUM(revenue) AS product_revenue
+-- Rank top 10 products by revenue
+SELECT
+    stock_code,
+    description,
+    SUM(revenue) AS product_revenue,
+    RANK() OVER (ORDER BY SUM(revenue) DESC) AS revenue_rank
 FROM online_retail_features
 GROUP BY stock_code, description
-ORDER BY product_revenue DESC
 LIMIT 10;
 
 -- Identify how many orders for each product
@@ -144,14 +154,14 @@ GROUP BY customer_id
 ORDER BY order_count DESC
 LIMIT 10;
 
--- Top 10 customers by revenue
+-- Rank top 10 customers by revenue
 SELECT
     customer_id,
-    SUM(revenue) AS revenue_per_customer
+    SUM(revenue),
+    RANK() OVER (ORDER BY SUM(revenue) DESC) AS customer_rank
 FROM online_retail_features
 WHERE customer_id IS NOT NULL
 GROUP BY customer_id
-ORDER BY revenue_per_customer DESC
 LIMIT 10;
 
 -- Average number of orders per customer
@@ -236,7 +246,7 @@ FROM online_retail_features
 GROUP BY invoice_hour
 ORDER BY hourly_revenue DESC;
 
--- Rank the quarters based on number of orders (2011)
+-- Identify number of orders for each quarter (2011)
 -- Result: 4, 3, 2, 1
 SELECT invoice_quarter, COUNT(DISTINCT invoice_no) AS quarterly_orders
 FROM online_retail_features
@@ -244,7 +254,7 @@ WHERE invoice_year = 2011
 GROUP BY invoice_quarter
 ORDER BY quarterly_orders DESC;
 
--- Rank the quarters based on revenue (2011)
+-- Identify the revenue for each quarter (2011)
 -- Result: 4, 3, 2, 1
 SELECT invoice_quarter, SUM(revenue) AS quarterly_revenue
 FROM online_retail_features
