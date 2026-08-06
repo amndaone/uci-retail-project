@@ -216,24 +216,28 @@ GROUP BY day_of_week, day_name
 ORDER BY orders_per_day DESC;
 
 -- Identify which day of week generates the most revenue
+-- Result: Thursday
 SELECT day_of_week, day_name, SUM(revenue) AS revenue_per_day
 FROM online_retail_features
 GROUP BY day_of_week, day_name
 ORDER BY revenue_per_day DESC;
 
 -- Which hour of the day has the highest number of orders
+-- Result: 12 PM
 SELECT invoice_hour, COUNT(DISTINCT invoice_no) AS hourly_order
 FROM online_retail_features
 GROUP BY invoice_hour
 ORDER BY hourly_order DESC;
 
 -- Which hour of the day generates most revenue
+-- Result: 10 AM
 SELECT invoice_hour, SUM(revenue) AS hourly_revenue
 FROM online_retail_features
 GROUP BY invoice_hour
 ORDER BY hourly_revenue DESC;
 
 -- Rank the quarters based on number of orders (2011)
+-- Result: 4, 3, 2, 1
 SELECT invoice_quarter, COUNT(DISTINCT invoice_no) AS quarterly_orders
 FROM online_retail_features
 WHERE invoice_year = 2011
@@ -241,6 +245,7 @@ GROUP BY invoice_quarter
 ORDER BY quarterly_orders DESC;
 
 -- Rank the quarters based on revenue (2011)
+-- Result: 4, 3, 2, 1
 SELECT invoice_quarter, SUM(revenue) AS quarterly_revenue
 FROM online_retail_features
 WHERE invoice_year = 2011
