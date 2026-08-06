@@ -81,6 +81,17 @@ SELECT
 FROM online_retail_features
 GROUP BY invoice_year, invoice_month, month_name;
 
+-- Month over month growth
+SELECT
+    invoice_month,
+    invoice_year,
+    SUM(revenue) AS current_month_revenue,
+    LAG(SUM(revenue)) OVER (ORDER BY invoice_year, invoice_month) AS prev_month_revenue,
+    100 * ROUND((SUM(revenue) - LAG(SUM(revenue)) OVER (ORDER BY invoice_year, invoice_month))
+    / LAG(SUM(revenue)) OVER (ORDER BY invoice_year, invoice_month), 2) AS growth_percentage
+FROM online_retail_features
+GROUP BY invoice_month, invoice_year;
+
 -- ===================================
 -- Product Analysis
 -- ===================================
@@ -174,6 +185,24 @@ FROM (
     WHERE customer_id IS NOT NULL
     GROUP BY customer_id
 ) AS orders_per_customer;
+
+-- Segment customers by revenue and count number in each tier
+-- Result: 104 top customers, 170 mid-level customers, 4065 basic level customers
+WITH customer_level_cte AS (
+    SELECT
+        customer_id,
+        SUM(revenue) AS customer_revenue
+        FROM online_retail_features
+        WHERE customer_id IS NOT NULL
+        GROUP BY customer_id
+)
+
+SELECT
+COUNT(CASE WHEN customer_revenue >= 10000 THEN 1 END) AS top_level_customer,
+COUNT(CASE WHEN customer_revenue >= 5000 AND customer_revenue < 10000 THEN 1 END) AS mid_level_customer,
+COUNT(CASE WHEN customer_revenue >= 0 AND customer_revenue < 5000 THEN 1 END) AS basic_level_customer
+FROM customer_level_cte;
+
 
 -- ===================================
 -- Geographical Analysis
