@@ -186,7 +186,7 @@ FROM (
     GROUP BY customer_id
 ) AS orders_per_customer;
 
--- Segment customers by revenue and count number in each tier
+-- Segment customers by revenue and count number in each tier (with customer ID)
 -- Result: 104 top customers, 170 mid-level customers, 4065 basic level customers
 WITH customer_level_cte AS (
     SELECT
@@ -203,6 +203,33 @@ COUNT(CASE WHEN customer_revenue >= 5000 AND customer_revenue < 10000 THEN 1 END
 COUNT(CASE WHEN customer_revenue >= 0 AND customer_revenue < 5000 THEN 1 END) AS basic_level_customer
 FROM customer_level_cte;
 
+-- Identify what percentage of revenue comes from top level customers (with customer ID)
+-- Result: 34.3%
+WITH top_customer_revenue AS (
+    SELECT SUM(revenue_sum) AS top_cust_revenue
+    FROM (
+        SELECT
+            customer_id,
+            SUM(revenue) AS revenue_sum
+        FROM online_retail_features
+        WHERE customer_id IS NOT NULL
+        GROUP BY customer_id
+    HAVING SUM(revenue) >= 10000
+    ) AS total_top_revenue
+),
+
+total_customer_revenue AS (
+    SELECT
+        SUM(revenue) AS total_revenue
+    FROM online_retail_features
+)
+
+SELECT
+    top_cust_revenue,
+    total_revenue,
+    ROUND(100 * (top_cust_revenue / total_revenue), 2) AS top_cust_percentage
+FROM top_customer_revenue
+CROSS JOIN total_customer_revenue;
 
 -- ===================================
 -- Geographical Analysis
