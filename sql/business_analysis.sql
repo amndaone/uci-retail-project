@@ -137,6 +137,7 @@ FROM(
 -- ===================================
 
 -- Average customer spend (with customer ID)
+-- Result: $2048.22
 SELECT ROUND(AVG(sum_revenue), 2) AS avg_customer_spend
 FROM(
     SELECT
@@ -148,6 +149,7 @@ FROM(
 ) AS customer_revenue;
 
 -- How many repeat customers
+-- Result: 2845
 SELECT COUNT(*) AS repeat_customers
 FROM(
     SELECT customer_id
@@ -156,6 +158,39 @@ FROM(
     GROUP BY customer_id
     HAVING COUNT(DISTINCT invoice_no) > 1
 ) AS repeat_customer_list;
+
+-- How many one-time customers
+-- Result: 1494
+SELECT COUNT(*) AS one_time_customers
+FROM(
+    SELECT customer_id
+    FROM online_retail_features
+    WHERE customer_id IS NOT NULL
+    GROUP BY customer_id
+    HAVING COUNT(DISTINCT invoice_no) = 1
+) AS one_time_customer_list;
+
+-- Sum of revenue from repeat customers
+-- Result: $8,273,219.33
+SELECT SUM(customer_revenue) AS repeat_customer_revenue
+FROM(
+    SELECT customer_id, SUM(revenue) AS customer_revenue
+    FROM online_retail_features
+    WHERE customer_id IS NOT NULL
+    GROUP BY customer_id
+    HAVING COUNT(DISTINCT invoice_no) > 1
+) AS repeat_customer_list;
+
+-- Sum of revenue from one-time customers
+-- Result: $613,989.56
+SELECT SUM(customer_revenue) AS one_time_cust_revenue
+FROM(
+    SELECT customer_id, SUM(revenue) AS customer_revenue
+    FROM online_retail_features
+    WHERE customer_id IS NOT NULL
+    GROUP BY customer_id
+    HAVING COUNT(DISTINCT invoice_no) = 1
+) AS one_time_customer_list;
 
 -- How many orders top 10 customers placed
 SELECT customer_id, COUNT(DISTINCT invoice_no) AS order_count
@@ -176,6 +211,7 @@ GROUP BY customer_id
 LIMIT 10;
 
 -- Average number of orders per customer
+-- Result: 4.27
 SELECT ROUND(AVG(order_count), 2) AS avg_order_per_customer
 FROM (
     SELECT
