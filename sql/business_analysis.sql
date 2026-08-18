@@ -240,7 +240,7 @@ COUNT(CASE WHEN customer_revenue >= 0 AND customer_revenue < 5000 THEN 1 END) AS
 FROM customer_level_cte;
 
 -- Identify what percentage of revenue comes from top level customers (with customer ID)
--- Result: 34.3%
+-- Result: 41.1%
 WITH top_customer_revenue AS (
     SELECT SUM(revenue_sum) AS top_cust_revenue
     FROM (
@@ -258,6 +258,7 @@ total_customer_revenue AS (
     SELECT
         SUM(revenue) AS total_revenue
     FROM online_retail_features
+    WHERE customer_id IS NOT NULL
 )
 
 SELECT
